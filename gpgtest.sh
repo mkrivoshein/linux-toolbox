@@ -26,10 +26,13 @@ restart_agent() {
 
 echo "=== GPG Health Check ==="
 
-if ! command -v gpg >/dev/null 2>&1; then
-  echo "ERROR: gpg not found in PATH"
-  exit 1
-fi
+required_commands=(gpg gpg-agent gpgconf gpg-connect-agent)
+for cmd in "${required_commands[@]}"; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "ERROR: $cmd not found in PATH"
+    exit 1
+  fi
+done
 
 echo "gpg version: $(gpg --version | head -1)"
 
@@ -45,7 +48,7 @@ echo "Running: echo \"test\" | gpg --clearsign"
 echo "(You may be prompted for your key passphrase)"
 echo ""
 
-if echo "test" | gpg --clearsign > /dev/null 2>&1; then
+if echo "test" | gpg --clearsign > /dev/null; then
   echo "SUCCESS: GPG signing works."
 else
   rc=$?
